@@ -1,12 +1,12 @@
 ## Texas Advanced Computing Center
-# Django App: "The Example"
+# Django CMS Plugin: Remote Content
 
-This app [provides something].
+This plugin fetches and displays content from remote TACC URLs. It was converted from the Core-CMS remote_content app into a Django CMS plugin.
 
-- __`__dist-name__`__: `django-tacc-the-example`
-- __`__package_name__`__: `django_tacc_the_example`
-- __`__ClassName__`__: `TheExample`
-- __"App Name"__: "The Example"
+- __Distribution Name__: `djangocms-tacc-remote-content`
+- __Package Name__: `djangocms_tacc_remote_content`
+- __Class Name__: `RemoteContent`
+- __Plugin Name__: "Remote Content"
 
 
 > [!IMPORTANT]
@@ -18,66 +18,84 @@ This app [provides something].
 
 ## Quick Start
 
-1. Follow [(wiki) Usage Quick Start](https://github.com/TACC/Django-App/wiki/Usage-Quick-Start).
+1. Install the package:
 
-> [!IMPORTANT]
-> After using this repository template for your app:
->
-> 1. Choose or replace all the step 2's with step(s) specific to your app.
-> 2. Remove this notice.
+```bash
+pip install djangocms-tacc-remote-content
+```
 
-For a website using **TACC/Core-CMS**:
+2. Add to INSTALLED_APPS in your Django project's settings:
 
-2. Follow https://github.com/TACC/Core-CMS/blob/main/README.md.
+```python
+INSTALLED_APPS = [
+    ...
+    'djangocms_tacc_remote_content',
+    ...
+]
+```
 
-For a **Django CMS** plugin:
+3. Run migrations:
 
-2. Any step that is specific to the app, such as the steps after this.
+```bash
+python manage.py migrate djangocms_tacc_remote_content
+```
 
-    ```python
-    # provide minimal example code that may help the reader
-    ```
+4. Configure the base URL for remote content in your settings (optional):
 
-3. Add a URLconf in your Django project's `urls.py` like this:
-
-    ```python
-        url(r'^sysmon/', include('__package_name__.urls')),
-    ```
-
-4. Add `__APP_NAME_SOME_PROP__` property and value to your Django project's settings:
-
-    ```python
-    __APP_NAME_SOME_PROP__ = 'specific_value'
-    ```
-
-5. Visit [http://your.project.url.host/some-app-url-path/](http://127.0.0.1:8000/ "The URL for your environment may be different than this.").
+```python
+PORTAL_REMOTE_CONTENT_SOURCE_ROOT = 'https://tacc.utexas.edu/'  # default value
+```
 
 ## Usage
 
-> [!IMPORTANT]
-> After using this repository template for your app:
->
-> 1. Replace the steps below with step(s) specific to your app.
-> 2. Remove this notice.
+1. In the Django CMS admin interface:
+   - Edit a page
+   - Add a "Remote Content" plugin to a placeholder
+   - Enter the path to the remote content (e.g. "about/staff")
 
-For a website using **TACC/Core-CMS**:
+2. The plugin will:
+   - Fetch content from the remote source
+   - Transform URLs to work in the local context
+   - Display the content or show "No content found" if unavailable
 
-1. Configure the website.
-1. Run the server and load the website.
-1. See server run without error and website matches configuration.
-
-For a **Django CMS** plugin:
-
-1. Add instance of plugin to a page.
-1. Configure the plugin instance.
-1. See plugin render content that matches configuration.
+3. Advanced features:
+   - Resource URLs (images, etc.) are automatically transformed
+   - Relative URLs are properly handled
+   - Cross-origin resources are marked appropriately
 
 ## Features
 
-> [!IMPORTANT]
-> After using this repository template for your app:
->
-> 1. Describe the feature(s) of the app, or remove this section.
-> 2. Remove this notice.
+- Simple interface to input a path to remote content
+- Automatic fetching and rendering of remote content
+- URL transformation to handle relative paths and resource URLs
+- Proper error handling for failed requests
+- "No content found" display when content is unavailable
 
-…
+## Development
+
+1. Clone the repository:
+```bash
+git clone https://github.com/TACC/Core-CMS-Plugin-Remote-Content.git
+```
+
+2. Install in development mode:
+```bash
+pip install -e .
+```
+
+## Testing
+
+The plugin includes tests to verify proper:
+- Content fetching and rendering
+- URL transformation
+- Error handling
+- Settings integration
+
+Run the tests with:
+```bash
+python manage.py test djangocms_tacc_remote_content
+```
+
+## License
+
+BSD 3-Clause License. See LICENSE file for details.
