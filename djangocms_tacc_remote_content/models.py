@@ -8,11 +8,11 @@ class RemoteContent(CMSPlugin):
     ===
     Defines at what path to load remote content
     """
-    path = models.CharField(
-        verbose_name=_('Path'),
+    remote_path = models.CharField(
+        verbose_name=_('Remote Path'),
         help_text=_('Path to remote content (e.g. "news/latest-news/tag/lccf/")'),
         max_length=255,
     )
 
     def __str__(self):
-        return self.path
+        return self.remote_path

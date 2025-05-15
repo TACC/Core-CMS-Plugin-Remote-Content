@@ -35,7 +35,7 @@ class RemoteContentPlugin(CMSPluginBase):
     def build_source_url(self, instance):
         """Build the source URL from settings and instance path"""
         source_root = getattr(settings, 'PORTAL_REMOTE_CONTENT_SOURCE_ROOT', 'https://tacc.utexas.edu/')
-        page = instance.path
+        page = instance.remote_path
 
         root_parts = urllib.parse.urlsplit(source_root)
         page_parts = urllib.parse.urlsplit(page)
