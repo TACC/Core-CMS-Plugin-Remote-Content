@@ -47,7 +47,7 @@ class RemoteContentPlugin(CMSPluginBase):
             netloc=root_parts.netloc,
             path=root_parts.path + page_parts.path,
             params=None,
-            query=None,
+            query=page_parts.query,
             fragment=page_parts.fragment
         )
 
