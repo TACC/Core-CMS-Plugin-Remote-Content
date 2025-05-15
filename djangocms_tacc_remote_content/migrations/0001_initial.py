@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='RemoteContent',
             fields=[
                 ('cmsplugin_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, related_name='djangocms_tacc_remote_content_remotecontent', serialize=False, to='cms.CMSPlugin')),
-                ('path', models.CharField(help_text='Path to remote content (e.g. "news/latest-news/tag/lccf/")', max_length=255, verbose_name='Path')),
+                ('remote_path', models.CharField(help_text='Path to remote content (e.g. "news/latest-news/tag/lccf/")', max_length=255, verbose_name='Remote Path')),
             ],
             options={
                 'abstract': False,
