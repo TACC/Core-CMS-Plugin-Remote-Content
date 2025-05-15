@@ -16,8 +16,10 @@ logger = logging.getLogger(f"portal.{__name__}")
 @plugin_pool.register_plugin
 class RemoteContentPlugin(CMSPluginBase):
     """
+    TACC Site > "Remote Content" Plugin
     Plugin for fetching and displaying remote content from TACC sites
     """
+    module = 'TACC Site'
     model = RemoteContent
     name = _('Remote Content')
     render_template = 'remote_content.html'
