@@ -1,8 +1,7 @@
 import logging
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, urlencode, parse_qsl
-import urllib.parse
+from urllib.parse import urlparse, urlsplit, urlunparse, ParseResult
 
 from django.conf import settings
 from cms.plugin_base import CMSPluginBase
@@ -10,6 +9,8 @@ from cms.plugin_pool import plugin_pool
 from django.utils.translation import gettext_lazy as _
 
 from .models import RemoteContent
+from .forms import RemoteContentForm, fieldsets
+from .constants import DEFAULT_SOURCE_ROOT
 
 logger = logging.getLogger(f"portal.{__name__}")
 
@@ -21,9 +22,15 @@ class RemoteContentPlugin(CMSPluginBase):
     """
     module = 'TACC Site'
     model = RemoteContent
+    form = RemoteContentForm
     name = _('Remote Content')
     render_template = 'remote_content.html'
     cache = True
+    fieldsets = fieldsets
+
+    def get_source_root(self):
+        """Get the source root URL from settings or default"""
+        return getattr(settings, 'PORTAL_REMOTE_CONTENT_SOURCE_ROOT', DEFAULT_SOURCE_ROOT)
 
     def get_source_markup(self, url):
         """Fetch content from remote URL"""
@@ -36,13 +43,13 @@ class RemoteContentPlugin(CMSPluginBase):
 
     def build_source_url(self, instance):
         """Build the source URL from settings and instance path"""
-        source_root = getattr(settings, 'PORTAL_REMOTE_CONTENT_SOURCE_ROOT', 'https://tacc.utexas.edu/')
+        source_root = self.get_source_root()
         page = instance.remote_path
 
-        root_parts = urllib.parse.urlsplit(source_root)
-        page_parts = urllib.parse.urlsplit(page)
+        root_parts = urlsplit(source_root)
+        page_parts = urlsplit(page)
 
-        url_parts = urllib.parse.ParseResult(
+        url_parts = ParseResult(
             scheme=root_parts.scheme,
             netloc=root_parts.netloc,
             path=root_parts.path + page_parts.path,
@@ -51,7 +58,7 @@ class RemoteContentPlugin(CMSPluginBase):
             fragment=page_parts.fragment
         )
 
-        source_url = urllib.parse.urlunparse(url_parts)
+        source_url = urlunparse(url_parts)
         logger.debug(f"Attempting to fetch: {source_url}")
         return source_url
 
@@ -90,4 +97,5 @@ class RemoteContentPlugin(CMSPluginBase):
         source_site = source.scheme + '://' + source.netloc
         
         context['markup'] = self.build_client_markup(source_markup, source_site)
+
         return context

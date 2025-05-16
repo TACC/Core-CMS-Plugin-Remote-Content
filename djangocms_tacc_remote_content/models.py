@@ -1,18 +1,18 @@
-from cms.models.pluginmodel import CMSPlugin
 from django.db import models
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 
+from cms.models.pluginmodel import CMSPlugin
+
+from .constants import DEFAULT_SOURCE_ROOT
+
 class RemoteContent(CMSPlugin):
-    """
-    Remote Content Model
-    ===
-    Defines at what path to load remote content
-    """
-    remote_path = models.CharField(
-        verbose_name=_('Remote Path'),
-        help_text=_('Path to remote content (e.g. "news/latest-news/tag/lccf/")'),
-        max_length=255,
-    )
+    remote_path = models.CharField(max_length=255)
+
+    def get_source_root(self):
+        """Get the source root URL from settings or default"""
+        return getattr(settings, 'PORTAL_REMOTE_CONTENT_SOURCE_ROOT', DEFAULT_SOURCE_ROOT)
 
     def __str__(self):
-        return self.remote_path
+        """Return the full URL of the remote content"""
+        return self.get_source_root().rstrip('/') + '/' + self.remote_path.lstrip('/')
