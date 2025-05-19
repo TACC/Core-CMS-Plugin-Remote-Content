@@ -43,7 +43,7 @@ python manage.py migrate djangocms_tacc_remote_content
 4. Configure the base URL for remote content in your settings (optional):
 
 ```python
-PORTAL_CONTENT_ROOT_URL = 'https://tacc.utexas.edu/'
+PORTAL_PLUGIN_CONTENT_NETLOC = 'https://tacc.utexas.edu/'
 ```
 
 ## Usage

@@ -62,16 +62,15 @@ Configure two sites:
             'taccsite_cms.middleware.settings.DynamicSiteIdMiddleware',
         ```
 
-3. Add these settings to `local_settings.py`:
+3. Add these settings to `settings_local.py`:
 
     ```python
     # Configure remote content settings
-    PORTAL_CONTENT_ROOT_URL = 'http://localhost:8000/'
-    PORTAL_REMOTE_CONTENT_CLIENT_PATH = '/remote/markup/'
+    PORTAL_PLUGIN_CONTENT_NETLOC = 'http://localhost:8000/'
     ```
 
     > [!NOTE]
-    > If you are **not** testing multisite **or** Blog/News content, then edit `PORTAL_REMOTE_CONTENT…` values appropriately.
+    > If you are testing actual remote content, then set `PORTAL_PLUGIN_CONTENT_NETLOC` appropriately.
 
 ## 3. Create Test Content
 
