@@ -99,6 +99,7 @@ class RemoteContentPlugin(CMSPluginBase):
     def render(self, context, instance, placeholder):
         context = super().render(context, instance, placeholder)
 
+        source_root = self.get_source_root()
         source_url = self.build_source_url(instance)
         source_markup = self.get_source_markup(source_url)
 
@@ -106,7 +107,7 @@ class RemoteContentPlugin(CMSPluginBase):
             context['error_string'] = f'Unable to fetch content from {source_url}'
             return context
 
-        source = urlparse(settings.PORTAL_PLUGIN_CONTENT_NETLOC)
+        source = urlparse(source_root)
         source_site = source.scheme + '://' + source.netloc
         context['markup'] = self.build_client_markup(source_markup, source_site)
 
