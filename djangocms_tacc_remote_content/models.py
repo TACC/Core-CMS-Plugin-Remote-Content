@@ -9,10 +9,11 @@ from .constants import DEFAULT_SOURCE_ROOT
 class RemoteContent(CMSPlugin):
     remote_path = models.CharField(max_length=255)
 
-    def get_source_root(self):
-        """Get the source root URL from settings or default"""
-        return getattr(settings, 'PORTAL_REMOTE_CONTENT_SOURCE_ROOT', DEFAULT_SOURCE_ROOT)
+    @property
+    def full_url(self):
+        """Return the full URL of the remote content"""
+        source_root = getattr(settings, 'PORTAL_REMOTE_CONTENT_SOURCE_ROOT', DEFAULT_SOURCE_ROOT)
+        return source_root.rstrip('/') + '/' + self.remote_path.lstrip('/')
 
     def __str__(self):
-        """Return the full URL of the remote content"""
-        return self.get_source_root().rstrip('/') + '/' + self.remote_path.lstrip('/')
+        return self.remote_path

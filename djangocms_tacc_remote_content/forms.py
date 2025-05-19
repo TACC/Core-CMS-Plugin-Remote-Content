@@ -8,11 +8,17 @@ class RemoteContentForm(forms.ModelForm):
         required=True
     )
 
+    class Meta:
+        help_texts = {
+            'full_url': _('The complete URL that will be used to fetch content.')
+        }
+
 fieldsets = [
     (_('Content Source'), {
         'description': _('Specify the path to the remote content you want to display.'),
         'fields': (
             'remote_path',
+            'full_url',
         )
     }),
 ]

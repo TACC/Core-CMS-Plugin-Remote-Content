@@ -27,6 +27,7 @@ class RemoteContentPlugin(CMSPluginBase):
     render_template = 'remote_content.html'
     cache = True
     fieldsets = fieldsets
+    readonly_fields = ['full_url']
 
     def get_source_root(self):
         """Get the source root URL from settings or default"""
