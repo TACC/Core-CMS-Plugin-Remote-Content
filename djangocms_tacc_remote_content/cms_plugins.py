@@ -29,6 +29,11 @@ class RemoteContentPlugin(CMSPluginBase):
     fieldsets = fieldsets
     readonly_fields = ['full_url']
 
+    def full_url(self, obj):
+        """Admin UI display of the full URL"""
+        return self.build_source_url(obj)
+    full_url.short_description = _('Full URL')
+
     def get_source_root(self):
         """Get the source root URL from settings or default"""
         return getattr(settings, 'PORTAL_CONTENT_ROOT_URL', DEFAULT_ROOT_URL)
