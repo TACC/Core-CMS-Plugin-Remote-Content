@@ -43,33 +43,27 @@ python manage.py migrate djangocms_tacc_remote_content
 4. Configure the base URL for remote content in your settings (optional):
 
 ```python
-PORTAL_REMOTE_CONTENT_SOURCE_ROOT = 'https://tacc.utexas.edu/'  # default value
+PORTAL_CONTENT_ROOT_URL = 'https://tacc.utexas.edu/'
 ```
 
 ## Usage
 
 1. In the Django CMS admin interface:
-   - Edit a page
-   - Add a "Remote Content" plugin to a placeholder
-   - Enter the path to the remote content (e.g. "about/staff")
+   1. Edit a page.
+   2. Add a "Remote Content" plugin to a placeholder.
+   3. Enter the path to the remote content (e.g. "/about/staff").
 
 2. The plugin will:
-   - Fetch content from the remote source
-   - Transform URLs to work in the local context
-   - Display the content or show "No content found" if unavailable
-
-3. Advanced features:
-   - Resource URLs (images, etc.) are automatically transformed
-   - Relative URLs are properly handled
-   - Cross-origin resources are marked appropriately
+   1. Fetch content from the remote source.
+   2. Transform URLs to work in the local context.
+   3. Display the content or show "No content found" if unavailable.
 
 ## Features
 
 - Simple interface to input a path to remote content
 - Automatic fetching and rendering of remote content
 - URL transformation to handle relative paths and resource URLs
-- Proper error handling for failed requests
-- "No content found" display when content is unavailable
+- Error handling for failed requests
 
 ## Development
 

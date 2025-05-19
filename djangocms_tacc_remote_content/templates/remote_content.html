@@ -1,5 +1,5 @@
 {% if markup %}
 {{ markup|safe }}
-{% else %}
-<p>No content found</p>
+{% elif error_string %}
+<p>{{ error_string|safe }}</p>
 {% endif %}

@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import RemoteContent
 from .forms import RemoteContentForm, fieldsets
-from .constants import DEFAULT_SOURCE_ROOT
+from .constants import DEFAULT_ROOT_URL
 
 logger = logging.getLogger(f"portal.{__name__}")
 
@@ -31,7 +31,7 @@ class RemoteContentPlugin(CMSPluginBase):
 
     def get_source_root(self):
         """Get the source root URL from settings or default"""
-        return getattr(settings, 'PORTAL_REMOTE_CONTENT_SOURCE_ROOT', DEFAULT_SOURCE_ROOT)
+        return getattr(settings, 'PORTAL_CONTENT_ROOT_URL', DEFAULT_ROOT_URL)
 
     def get_source_markup(self, url):
         """Fetch content from remote URL"""
@@ -50,10 +50,13 @@ class RemoteContentPlugin(CMSPluginBase):
         root_parts = urlsplit(source_root)
         page_parts = urlsplit(page)
 
+        root_path = root_parts.path.rstrip('/')
+        page_path = page_parts.path.lstrip('/')
+
         url_parts = ParseResult(
             scheme=root_parts.scheme,
             netloc=root_parts.netloc,
-            path=root_parts.path + page_parts.path,
+            path=f"{root_path}/{page_path}",
             params=None,
             query=page_parts.query,
             fragment=page_parts.fragment
@@ -94,9 +97,16 @@ class RemoteContentPlugin(CMSPluginBase):
         source_url = self.build_source_url(instance)
         source_markup = self.get_source_markup(source_url)
 
-        source = urlparse(settings.PORTAL_REMOTE_CONTENT_SOURCE_ROOT)
+        if source_markup is None and settings.DEBUG:
+            context['error_string'] = f'Unable to fetch content from {source_url}'
+            return context
+
+        source = urlparse(settings.PORTAL_CONTENT_ROOT_URL)
         source_site = source.scheme + '://' + source.netloc
-        
         context['markup'] = self.build_client_markup(source_markup, source_site)
+
+        if context['markup'] is None and settings.DEBUG:
+            context['error_string'] = 'Error processing remote content'
+            return context
 
         return context

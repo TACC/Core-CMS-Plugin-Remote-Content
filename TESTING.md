@@ -66,7 +66,7 @@ Configure two sites:
 
     ```python
     # Configure remote content settings
-    PORTAL_REMOTE_CONTENT_SOURCE_ROOT = 'http://localhost:8000/'
+    PORTAL_CONTENT_ROOT_URL = 'http://localhost:8000/'
     PORTAL_REMOTE_CONTENT_CLIENT_PATH = '/remote/markup/'
     ```
 
