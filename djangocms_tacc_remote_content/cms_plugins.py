@@ -55,13 +55,10 @@ class RemoteContentPlugin(CMSPluginBase):
         root_parts = urlsplit(source_root)
         page_parts = urlsplit(page)
 
-        root_path = root_parts.path.rstrip('/')
-        page_path = page_parts.path.lstrip('/')
-
         url_parts = ParseResult(
             scheme=root_parts.scheme,
             netloc=root_parts.netloc,
-            path=f"{root_path}/{page_path}",
+            path=f"{root_parts.path.rstrip('/')}/{page_parts.path.lstrip('/')}",
             params=None,
             query=page_parts.query,
             fragment=page_parts.fragment
