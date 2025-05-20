@@ -2,7 +2,18 @@
 
 [Core CMS]: https://github.com/TACC/Core-CMS
 
-## 0. Prepare a Local Server
+## Automated Testing
+
+1. Install plugin into a project e.g. [Core CMS].
+2. In that project, run `python manage.py test djangocms_tacc_remote_content` e.g.
+
+    ```sh
+    docker exec -it core_cms python manage.py test djangocms_tacc_remote_content
+    ```
+
+## Manual Testing
+
+### 0. Prepare a Local Server
 
 1. Follow [TACC/Core-CMS "Getting Started" steps](https://github.com/TACC/Core-CMS#getting-started).
 2. Add middleware from [TACC/Core-CMS#873](https://github.com/TACC/Core-CMS/pull/873).
@@ -20,7 +31,7 @@
         'taccsite_cms.middleware.settings.DynamicSiteIdMiddleware',
    ```
 
-## 1. Set Up Sites in Django Admin
+### 1. Set Up Sites in Django Admin
 
 Visit: http://localhost:8000/admin/sites/site/
 
@@ -31,7 +42,7 @@ Configure two sites:
 - Site 2:\
     domain = `127.0.0.1:8000`
 
-## 2. Configure Settings
+### 2. Configure Settings
 
 1. (Optional) Verify you have a working Blog/News.
 
@@ -72,7 +83,7 @@ Configure two sites:
     > [!NOTE]
     > If you are testing actual remote content, then set `PORTAL_PLUGIN_CONTENT_NETLOC` appropriately.
 
-## 3. Create Test Content
+### 3. Create Test Content
 
 **If** you **will** test Blog/News, [create two **articles**](http://localhost:8000/admin/djangocms_blog/post/):
 
@@ -98,7 +109,7 @@ Configure two sites:
     1. Create "Site 2 Page".
     2. Add text "Site 2 Page" to the page.
 
-## 4. Test Setup
+### 4. Test Setup
 
 1. View articles or pages on their respective sites:
 
@@ -110,7 +121,7 @@ Configure two sites:
     1. http://localhost:8000/site-1-page/
     2. http://127.0.0.1:8000/site-2-page/
 
-## 5. Test Feature
+### 5. Test Feature
 
 Test "Remote Content" plugin on a page on "Site 2" to load content from "Site 1".
 

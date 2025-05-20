@@ -67,4 +67,4 @@ This plugin fetches and displays content from remote TACC URLs. It was converted
 
 ## Testing
 
-Run `python manage.py test djangocms_tacc_remote_content`.
+Follow [TESTING.md](TESTING.md).
