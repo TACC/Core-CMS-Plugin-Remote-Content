@@ -58,7 +58,7 @@ This plugin fetches and displays content from remote TACC URLs. It was converted
 > - load extra assets specific to client context
 
 > [!TIP]
-> [Loading news from TACC websites](djangocms_tacc_remote_content/docs/news-from-a-core-cms-website.md) may require client application to add specific extra assets.
+> [Loading news from TACC websites](./docs/news-from-a-core-cms-website.md) may require client application to add specific extra assets.
 
 ## Screenshots
 
