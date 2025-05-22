@@ -1,6 +1,7 @@
 from django.test import TestCase, override_settings
 from django.conf import settings
 from unittest.mock import patch, MagicMock
+from bs4 import BeautifulSoup
 
 from cms.api import add_plugin
 from cms.models import Placeholder
@@ -118,3 +119,52 @@ class RemoteContentPluginTests(TestCase):
         context = self.plugin_instance.render({}, self.plugin, None)
         html = self.renderer.render_plugin(self.plugin, context)
         self.assertIn("Test Content", html)
+
+    def test_keep_relative_paths(self):
+        """Test that elements matching CSS selectors from settings keep relative paths"""
+        test_selectors = ['.pagination a', '[data-use-relative-url]']
+        test_markup = '''
+            <div>
+                <nav class="pagination">
+                    <span class="current">Page 1 of 37</span>
+                    <a href="?page=2">Next &gt;</a>
+                </nav>
+                <div class="content">
+                    <a href="/path/to/resource" data-use-relative-url>Resource</a>
+                    <a href="/docs/guide.html">Guide</a>
+                    <img src="/path/to/image.jpg" data-use-relative-url>
+                    <img src="/images/photo.jpg">
+                </div>
+            </div>
+        '''
+
+        with self.settings(PORTAL_PLUGIN_CONTENT_USE_RELATIVE_PATHS=test_selectors):
+            result = self.plugin_instance.build_client_markup(test_markup, defaults.NETLOC)
+            soup = BeautifulSoup(result, 'html.parser')
+
+            # Pagination links should remain relative
+            pagination_link = soup.select_one('.pagination a')
+            self.assertEqual(pagination_link['href'], '?page=2')
+            self.assertNotIn('target', pagination_link.attrs)
+            self.assertNotIn('crossorigin', pagination_link.attrs)
+
+            # [data-use-relative-url] links should remain relative
+            custom_link = soup.find('a', attrs={'data-use-relative-url': True})
+            self.assertEqual(custom_link['href'], '/path/to/resource')
+            self.assertNotIn('target', custom_link.attrs)
+            self.assertNotIn('crossorigin', custom_link.attrs)
+
+            # Other links should be absolute
+            docs_link = soup.find('a', href=defaults.NETLOC + '/docs/guide.html')
+            self.assertEqual(docs_link['href'], defaults.NETLOC + '/docs/guide.html')
+            self.assertEqual(docs_link['target'], '_blank')
+
+            # [data-use-relative-url] images should remain relative
+            custom_img = soup.find('img', attrs={'data-use-relative-url': True})
+            self.assertEqual(custom_img['src'], '/path/to/image.jpg')
+            self.assertNotIn('crossorigin', custom_img.attrs)
+
+            # Other images should be absolute
+            other_img = soup.find('img', src=defaults.NETLOC + '/images/photo.jpg')
+            self.assertEqual(other_img['src'], defaults.NETLOC + '/images/photo.jpg')
+            self.assertEqual(other_img['crossorigin'], 'anonymous')

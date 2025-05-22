@@ -21,6 +21,7 @@ This guide explains how to load news content from [TACC] or other [TACC/Core-CMS
 
     - `/news/latest-news/` is typical, but verify exact path on the source site.
     - `?template=raw.html` removes header, footer, breadcrumbs, assets, etc.
+
 3. Ensure source website has `('raw.html', 'Raw')` in its `CMS_TEMPLATES` setting e.g.
 
     ```py
@@ -31,6 +32,20 @@ This guide explains how to load news content from [TACC] or other [TACC/Core-CMS
     ```
 
     <sup>This will remove the header, footer, breadcrumbs, global assets, et cetera from the page.</sup>
+
+4. Ensure the pagination links retain their relative URLs, so news list remains inside client:
+
+    ```py
+    PORTAL_PLUGIN_CONTENT_USE_RELATIVE_PATHS = [
+        '.pagination a' # for "?page=2" links in news lists
+    ]
+    ```
+
+5. **If** the source website for your news is not [TACC], **then** set the base URL in your settings:
+
+    ```py
+    PORTAL_PLUGIN_CONTENT_NETLOC = 'https://example.com/'
+    ```
 
 ## Filter
 

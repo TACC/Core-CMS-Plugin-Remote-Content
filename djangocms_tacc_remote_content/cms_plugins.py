@@ -68,6 +68,19 @@ class RemoteContentPlugin(CMSPluginBase):
         logger.debug(f"Attempting to fetch: {source_url}")
         return source_url
 
+    def should_keep_relative(self, element, config):
+        """Determine if element should keep relative URLs based on setting"""
+        if isinstance(config, bool):
+            return config
+        if isinstance(config, (list, tuple)):
+            root = element
+            while root.parent:
+                root = root.parent
+            for selector in config:
+                if element in root.select(selector):
+                    return True
+        return False
+
     def build_client_markup(self, source_markup, source_site):
         """Transform remote content for local display"""
         if not source_markup:
@@ -75,11 +88,14 @@ class RemoteContentPlugin(CMSPluginBase):
 
         soup = BeautifulSoup(source_markup, 'html.parser')
 
+        use_relative = getattr(settings, 'PORTAL_PLUGIN_CONTENT_USE_RELATIVE_PATHS', defaults.USE_RELATIVE_PATHS)
+
         # To transform resource URLs
         for tag in soup.find_all(src=True):
             if tag['src'].startswith('/'):
-                tag['crossorigin'] = 'anonymous'
-                tag['src'] = source_site + tag['src']
+                if not self.should_keep_relative(tag, use_relative):
+                    tag['crossorigin'] = 'anonymous'
+                    tag['src'] = source_site + tag['src']
 
         # To transform reference URLs
         for tag in soup.find_all(href=True):
@@ -88,7 +104,7 @@ class RemoteContentPlugin(CMSPluginBase):
             if '://' in href or href.startswith('#'):
                 continue
 
-            if tag.name in ['link', 'a']:
+            if not self.should_keep_relative(tag, use_relative):
                 tag['crossorigin'] = 'anonymous'
                 tag['href'] = source_site + href
                 tag['target'] = '_blank'
