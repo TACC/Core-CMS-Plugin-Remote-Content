@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import RemoteContent
 from .forms import RemoteContentForm, fieldsets
-from .settings import DEFAULT_NETLOC
+from . import settings as defaults
 
 logger = logging.getLogger(f"portal.{__name__}")
 
@@ -36,7 +36,7 @@ class RemoteContentPlugin(CMSPluginBase):
 
     def get_source_root(self):
         """Get the source root URL from settings or default"""
-        return getattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC', DEFAULT_NETLOC)
+        return getattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC', defaults.NETLOC)
 
     def get_source_markup(self, url):
         """Fetch content from remote URL"""

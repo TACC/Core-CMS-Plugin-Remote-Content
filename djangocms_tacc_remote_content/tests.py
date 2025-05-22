@@ -8,7 +8,7 @@ from cms.plugin_rendering import ContentRenderer
 
 from .models import RemoteContent
 from .cms_plugins import RemoteContentPlugin
-from .settings import DEFAULT_NETLOC
+from . import settings as defaults
 
 class RemoteContentPluginTests(TestCase):
     def setUp(self):
@@ -43,7 +43,7 @@ class RemoteContentPluginTests(TestCase):
         with self.settings(PORTAL_PLUGIN_CONTENT_NETLOC=None):
             delattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC')  # Force setting to be truly unset
             source_root = self.plugin_instance.get_source_root()
-            self.assertEqual(source_root, DEFAULT_NETLOC)
+            self.assertEqual(source_root, defaults.NETLOC)
 
     @patch("requests.get")
     def test_content_fetching_success(self, mock_get):
@@ -77,10 +77,10 @@ class RemoteContentPluginTests(TestCase):
         with self.settings(PORTAL_PLUGIN_CONTENT_NETLOC=None):
             test_cases = [
                 # ( input path,     expected url )
-                ( "/about/staff",   f"{DEFAULT_NETLOC}about/staff" ),
-                ( "/about/staff/",  f"{DEFAULT_NETLOC}about/staff/" ),
-                ( "about/staff",    f"{DEFAULT_NETLOC}about/staff" ),
-                ( "about/staff/",   f"{DEFAULT_NETLOC}about/staff/" ),
+                ( "/about/staff",   f"{defaults.NETLOC}about/staff" ),
+                ( "/about/staff/",  f"{defaults.NETLOC}about/staff/" ),
+                ( "about/staff",    f"{defaults.NETLOC}about/staff" ),
+                ( "about/staff/",   f"{defaults.NETLOC}about/staff/" ),
             ]
 
         for input_path, expected_url in test_cases:
