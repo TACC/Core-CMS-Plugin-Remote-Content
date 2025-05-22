@@ -8,7 +8,7 @@ from cms.plugin_rendering import ContentRenderer
 
 from .models import RemoteContent
 from .cms_plugins import RemoteContentPlugin
-from .constants import DEFAULT_NETLOC
+from .settings import DEFAULT_NETLOC
 
 class RemoteContentPluginTests(TestCase):
     def setUp(self):

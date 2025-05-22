@@ -10,7 +10,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import RemoteContent
 from .forms import RemoteContentForm, fieldsets
-from .constants import DEFAULT_NETLOC
+from .settings import DEFAULT_NETLOC
 
 logger = logging.getLogger(f"portal.{__name__}")
 
