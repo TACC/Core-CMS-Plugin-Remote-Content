@@ -75,21 +75,23 @@ class RemoteContentPlugin(CMSPluginBase):
 
         soup = BeautifulSoup(source_markup, 'html.parser')
 
-        # Transform resource URLs
+        # To transform resource URLs
         for tag in soup.find_all(src=True):
             if tag['src'].startswith('/'):
                 tag['crossorigin'] = 'anonymous'
                 tag['src'] = source_site + tag['src']
 
-        # Transform reference URLs
+        # To transform reference URLs
         for tag in soup.find_all(href=True):
             href = tag['href']
-            if ':' in href or href.startswith('#'):
+            # To skip absolute URLs and anchors
+            if '://' in href or href.startswith('#'):
                 continue
 
-            if tag.name == 'link':
+            if tag.name in ['link', 'a']:
                 tag['crossorigin'] = 'anonymous'
                 tag['href'] = source_site + href
+                tag['target'] = '_blank'
 
         return str(soup)
 
