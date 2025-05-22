@@ -41,6 +41,8 @@ This guide explains how to load news content from [TACC] or other [TACC/Core-CMS
     ]
     ```
 
+    <sup>The plugin will forward content parameters (like `page=2`) to the source website, but filter out Django CMS parameters (like `toolbar_on`).</sup>
+
 5. **If** the source website for your news is not [TACC], **then** set the base URL in your settings:
 
     ```py

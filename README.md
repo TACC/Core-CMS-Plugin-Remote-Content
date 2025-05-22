@@ -73,7 +73,10 @@ This plugin fetches and displays content from remote TACC URLs. It was converted
 
 - Simple interface to input a path to remote content
 - Automatic fetching and rendering of remote content
-- URL transformation to handle relative paths and resource URLs
+- URL transformation to handle:
+  - relative paths
+  - resource URLs
+  - query parameters
 - Error handling for failed requests
 
 ## Testing

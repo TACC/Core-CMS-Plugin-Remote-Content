@@ -47,7 +47,7 @@ class RemoteContentPlugin(CMSPluginBase):
             logger.error(f"Failed to fetch content from {url}")
             return None
 
-    def build_source_url(self, instance):
+    def build_source_url(self, instance, request=None):
         """Build the source URL from settings and instance path"""
         source_root = self.get_source_root()
         page = instance.remote_path
@@ -55,12 +55,25 @@ class RemoteContentPlugin(CMSPluginBase):
         root_parts = urlsplit(source_root)
         page_parts = urlsplit(page)
 
+        # CMS pages can load for editors with these query parameters
+        cms_params = {'edit', 'toolbar_on', 'toolbar_off', 'structure', 'preview'}
+
+        query_params = page_parts.query
+        if request and request.GET:
+            filtered_params = {
+                key: value for key, value in request.GET.items()
+                if key not in cms_params
+            }
+            if filtered_params:
+                request_query = '&'.join(f"{key}={value}" for key, value in filtered_params.items())
+                query_params = f"{query_params}&{request_query}" if query_params else request_query
+
         url_parts = ParseResult(
             scheme=root_parts.scheme,
             netloc=root_parts.netloc,
             path=f"{root_parts.path.rstrip('/')}/{page_parts.path.lstrip('/')}",
             params=None,
-            query=page_parts.query,
+            query=query_params,
             fragment=page_parts.fragment
         )
 
@@ -115,7 +128,7 @@ class RemoteContentPlugin(CMSPluginBase):
         context = super().render(context, instance, placeholder)
 
         source_root = self.get_source_root()
-        source_url = self.build_source_url(instance)
+        source_url = self.build_source_url(instance, context.get('request'))
         source_markup = self.get_source_markup(source_url)
 
         if source_markup is None and settings.DEBUG:

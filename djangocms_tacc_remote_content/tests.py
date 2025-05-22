@@ -168,3 +168,30 @@ class RemoteContentPluginTests(TestCase):
             other_img = soup.find('img', src=defaults.NETLOC + '/images/photo.jpg')
             self.assertEqual(other_img['src'], defaults.NETLOC + '/images/photo.jpg')
             self.assertEqual(other_img['crossorigin'], 'anonymous')
+
+    def test_query_parameter_handling(self):
+        """Test handling of query parameters in URLs"""
+        from django.test import RequestFactory
+
+        instance = RemoteContent(remote_path="/news")
+        test_cases = [
+            # (request URL, expected params in result, unexpected params in result)
+            ('/?page=2', ['page=2'], []), # basic content parameter
+            ('/?page=2&toolbar_on', ['page=2'], ['toolbar_on']), # CMS param should be filtered
+            ('/?structure&other_param=test', ['other_param=test'], ['structure']), # mixed params
+            ('/?preview&page=3&toolbar_off', ['page=3'], ['preview', 'toolbar_off']), # multiple CMS params
+            ('/?edit&tag=featured', ['tag=featured'], ['edit']), # edit param filtered
+        ]
+
+        for test_url, expected_params, unexpected_params in test_cases:
+            with self.subTest(test_url=test_url):
+                request = RequestFactory().get(test_url)
+                url = self.plugin_instance.build_source_url(instance, request)
+                
+                # Check expected parameters are present
+                for param in expected_params:
+                    self.assertIn(param, url, f"Expected parameter '{param}' missing from URL: {url}")
+                
+                # Check CMS parameters are filtered out
+                for param in unexpected_params:
+                    self.assertNotIn(param, url, f"Unexpected parameter '{param}' found in URL: {url}")
