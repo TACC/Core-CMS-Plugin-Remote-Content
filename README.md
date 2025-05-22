@@ -8,14 +8,6 @@ This plugin fetches and displays content from remote TACC URLs. It was converted
 - __Class Name__: `RemoteContent`
 - __Plugin Name__: "Remote Content"
 
-
-> [!IMPORTANT]
-> After using this repository template for your app:
->
-> 1. Follow [(wiki) Development Quick Start](https://github.com/TACC/Django-App/wiki/Development-Quick-Start).
-> 2. Remove this notice.
-
-
 ## Quick Start
 
 1. Install the package:
@@ -58,9 +50,17 @@ This plugin fetches and displays content from remote TACC URLs. It was converted
    2. Transform URLs to work in the local context.
    3. Display the content or show "No content found" if unavailable.
 
+> [!WARNING]
+> It is client application responsibility to:
+> - support [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS) for assets from other domains 
+> - load extra assets specific to client context
+
+> [!TIP]
+> [Loading news from TACC websites](djangocms_tacc_remote_content/docs/news-from-a-core-cms-website.md) may require client application to add specific extra assets.
+
 ## Screenshots
 
-| 1. Plugin chosen | 2. Path set| 3. Arranged in structure | 4. Content rendered |
+| 1. Plugin chosen | 2. Path set | 3. Arranged in structure | 4. Content rendered |
 | - | - | - | - |
 | <img width="475" alt="plugin choice" src="https://github.com/user-attachments/assets/2a7ce112-2cda-4bf9-b9f4-a1f86163fa29" /> | <img width="720" alt="plugin form" src="https://github.com/user-attachments/assets/b6d4d85f-a1af-49da-a3bb-e64dd67bf7f6" /> | <img width="375" alt="plugin instance" src="https://github.com/user-attachments/assets/fbd00693-5e83-4d38-88c2-3db6a31454fe" /> | <img width="960" alt="plugin rendered" src="https://github.com/user-attachments/assets/6bf4d2a8-bec2-47a6-b14e-9b5740327407" /> |
 
