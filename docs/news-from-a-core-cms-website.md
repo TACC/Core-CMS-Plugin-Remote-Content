@@ -16,18 +16,18 @@ This guide explains how to load news content from [TACC] or other [TACC/Core-CMS
 2. Set path to:
 
     ```
-    /news/latest-news/?template=bare.html
+    /news/latest-news/?template=plain.html
     ```
 
     - `/news/latest-news/` is typical, but verify exact path on the source site.
-    - `?template=bare.html` removes header, footer, breadcrumbs, assets, etc.
+    - `?template=plain.html` removes header, footer, breadcrumbs, assets, etc.
 
-3. Ensure source website has `('bare.html', 'Bare')` in its `CMS_TEMPLATES` setting e.g.
+3. Ensure source website has `('plain.html', 'Plain')` in its `CMS_TEMPLATES` setting e.g.
 
     ```py
     CMS_TEMPLATES = (
         # standard templates, plus...
-        ('bare.html', 'Bare'),
+        ('plain.html', 'Plain'),
     )
     ```
 
@@ -55,8 +55,8 @@ You can filter news content by using appropiate path.
 
 | Filter by | Path |
 | - | - |
-| Tag | `/news/latest-news/tag/SOME_TAG?template=bare.html` |
-| Category | `/news/latest-news/category/SOME_CATEGORY?template=bare.html` |
+| Tag | `/news/latest-news/tag/SOME_TAG?template=plain.html` |
+| Category | `/news/latest-news/category/SOME_CATEGORY?template=plain.html` |
 
 ## Styles
 
