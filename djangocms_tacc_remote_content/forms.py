@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 class RemoteContentForm(forms.ModelForm):
     remote_path = forms.CharField(
         label=_('Remote Path'),
-        help_text=_('The path of the URL to the remote content to be displayed (e.g. "/news/latest-news/tag/lccf/")'),
+        help_text=_('The path of the URL to the remote content to be displayed (e.g. "/news/latest-news/tag/lccf/?template=plain.html")'),
         required=True
     )
 
