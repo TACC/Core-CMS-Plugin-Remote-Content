@@ -10,7 +10,7 @@ class RemoteContentForm(forms.ModelForm):
 
     class Meta:
         help_texts = {
-            'full_url': _('The complete URL that is currently used to fetch content.')
+            'full_url': _('The complete URL that is currently used to fetch content. (If you changed "Remote Path", save to update this.)')
         }
         labels = {
             'full_url': _('Full URL')
