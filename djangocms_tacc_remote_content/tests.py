@@ -22,7 +22,7 @@ class RemoteContentPluginTests(TestCase):
             self.placeholder,
             RemoteContentPlugin,
             "en",
-            remote_path="/about/staff"
+            remote_path="/about/about-tacc"
         )
         self.plugin_instance = self.plugin.get_plugin_class_instance()
         self.renderer = ContentRenderer(request=None)
@@ -78,8 +78,8 @@ class RemoteContentPluginTests(TestCase):
         with self.settings(PORTAL_PLUGIN_CONTENT_NETLOC=None):
             test_cases = [
                 # ( input path,     expected url )
-                ( "/about/staff",   f"{defaults.NETLOC}about/staff" ),
-                ( "/about/staff/",  f"{defaults.NETLOC}about/staff/" ),
+                ( "/about/about-tacc",   f"{defaults.NETLOC}about/staff" ),
+                ( "/about/about-tacc/",  f"{defaults.NETLOC}about/staff/" ),
                 ( "about/staff",    f"{defaults.NETLOC}about/staff" ),
                 ( "about/staff/",   f"{defaults.NETLOC}about/staff/" ),
             ]
@@ -97,11 +97,11 @@ class RemoteContentPluginTests(TestCase):
     @override_settings(PORTAL_PLUGIN_CONTENT_NETLOC="https://example.com/path/")
     def test_url_building_with_complex_root(self):
         """Test URL building with different source root configurations"""
-        instance = RemoteContent(remote_path="/about/staff")
+        instance = RemoteContent(remote_path="/about/about-tacc")
         full_url = self.plugin_instance.build_source_url(instance)
 
         # Should handle source roots with paths and trailing slashes correctly
-        self.assertEqual(full_url, "https://example.com/path/about/staff")
+        self.assertEqual(full_url, "https://example.com/path/about/about-tacc")
 
         # Test with a different instance to ensure path joining works
         instance2 = RemoteContent(remote_path="no/leading/slash")
