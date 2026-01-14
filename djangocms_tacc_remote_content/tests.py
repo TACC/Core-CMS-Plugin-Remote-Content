@@ -78,10 +78,10 @@ class RemoteContentPluginTests(TestCase):
         with self.settings(PORTAL_PLUGIN_CONTENT_NETLOC=None):
             test_cases = [
                 # ( input path,     expected url )
-                ( "/about/about-tacc",   f"{defaults.NETLOC}about/staff" ),
-                ( "/about/about-tacc/",  f"{defaults.NETLOC}about/staff/" ),
-                ( "about/staff",    f"{defaults.NETLOC}about/staff" ),
-                ( "about/staff/",   f"{defaults.NETLOC}about/staff/" ),
+                ( "/about/about-tacc",   f"{defaults.NETLOC}about/about-tacc" ),
+                ( "/about/about-tacc/",  f"{defaults.NETLOC}about/about-tacc/" ),
+                ( "about/about-tacc",    f"{defaults.NETLOC}about/about-tacc" ),
+                ( "about/about-tacc/",   f"{defaults.NETLOC}about/about-tacc/" ),
             ]
 
         for input_path, expected_url in test_cases:
