@@ -134,7 +134,7 @@ class RemoteContentPluginTests(TestCase):
                     <a href="/docs/guide.html">Guide</a>
                     <img src="/path/to/image.jpg" data-use-relative-url>
                     <img src="/images/photo.jpg">
-                    <img src="/images/photo2.jpg" srcset="/images/photo2-1x.jpg 1x, /images/photo2-2x.jpg 2x">
+                    <img src="/images/photo2.jpg" srcset=" /images/photo2-576.jpg 576w, /images/photo2-768.jpg 768w, /images/photo2-992.jpg 992w ">
                     <img src="/images/photo3.jpg" srcset="https://example.com/absolute.jpg 1x">
                 </div>
             </div>
@@ -176,7 +176,7 @@ class RemoteContentPluginTests(TestCase):
             imgs_with_srcset = [img for img in soup.find_all('img', srcset=True) if 'data-use-relative-url' not in img.attrs]
             img_with_srcset = [img for img in imgs_with_srcset if img['srcset'].startswith(defaults.NETLOC)][0]
             self.assertEqual(img_with_srcset['src'], defaults.NETLOC + '/images/photo2.jpg')
-            expected_srcset = f"{defaults.NETLOC}/images/photo2-1x.jpg 1x, {defaults.NETLOC}/images/photo2-2x.jpg 2x"
+            expected_srcset = f"{defaults.NETLOC}/images/photo2-576.jpg 576w, {defaults.NETLOC}/images/photo2-768.jpg 768w, {defaults.NETLOC}/images/photo2-992.jpg 992w"
             self.assertEqual(img_with_srcset['srcset'], expected_srcset)
 
             # Image with absolute srcset should transform src but leave srcset unchanged
