@@ -120,8 +120,8 @@ class RemoteContentPluginTests(TestCase):
         html = self.renderer.render_plugin(self.plugin, context)
         self.assertIn("Test Content", html)
 
-    def test_keep_relative_paths(self):
-        """Test that elements matching CSS selectors from settings keep relative paths"""
+    def test_path_transformation(self):
+        """Test that relative and absolute paths are transformed correctly"""
         test_selectors = ['.pagination a', '[data-use-relative-url]']
         test_markup = '''
             <div>
@@ -134,6 +134,8 @@ class RemoteContentPluginTests(TestCase):
                     <a href="/docs/guide.html">Guide</a>
                     <img src="/path/to/image.jpg" data-use-relative-url>
                     <img src="/images/photo.jpg">
+                    <img src="/images/photo2.jpg" srcset="/images/photo2-1x.jpg 1x, /images/photo2-2x.jpg 2x">
+                    <img src="/images/photo3.jpg" srcset="https://example.com/absolute.jpg 1x">
                 </div>
             </div>
         '''
@@ -168,6 +170,19 @@ class RemoteContentPluginTests(TestCase):
             other_img = soup.find('img', src=defaults.NETLOC + '/images/photo.jpg')
             self.assertEqual(other_img['src'], defaults.NETLOC + '/images/photo.jpg')
             self.assertEqual(other_img['crossorigin'], 'anonymous')
+            self.assertNotIn('srcset', other_img.attrs)
+
+            # Image with relative srcset should transform both src and srcset
+            imgs_with_srcset = [img for img in soup.find_all('img', srcset=True) if 'data-use-relative-url' not in img.attrs]
+            img_with_srcset = [img for img in imgs_with_srcset if img['srcset'].startswith(defaults.NETLOC)][0]
+            self.assertEqual(img_with_srcset['src'], defaults.NETLOC + '/images/photo2.jpg')
+            expected_srcset = f"{defaults.NETLOC}/images/photo2-1x.jpg 1x, {defaults.NETLOC}/images/photo2-2x.jpg 2x"
+            self.assertEqual(img_with_srcset['srcset'], expected_srcset)
+
+            # Image with absolute srcset should transform src but leave srcset unchanged
+            img_absolute_srcset = [img for img in imgs_with_srcset if 'https://' in img['srcset']][0]
+            self.assertEqual(img_absolute_srcset['src'], defaults.NETLOC + '/images/photo3.jpg')
+            self.assertEqual(img_absolute_srcset['srcset'], 'https://example.com/absolute.jpg 1x')
 
     def test_query_parameter_handling(self):
         """Test handling of query parameters in URLs"""
