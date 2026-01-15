@@ -210,3 +210,59 @@ class RemoteContentPluginTests(TestCase):
                 # Check CMS parameters are filtered out
                 for param in unexpected_params:
                     self.assertNotIn(param, url, f"Unexpected parameter '{param}' found in URL: {url}")
+
+    def test_transform_srcset(self):
+        """Test transform_srcset function with various srcset formats"""
+        source_site = "https://example.com"
+
+        test_cases = [
+            # (input srcset, expected output)
+            (
+                " /images/photo-576.jpg 576w, /images/photo-768.jpg 768w, /images/photo-992.jpg 992w ",
+                f"{source_site}/images/photo-576.jpg 576w, {source_site}/images/photo-768.jpg 768w, {source_site}/images/photo-992.jpg 992w"
+            ),
+            (
+                "/images/photo-576.jpg 576w, /images/photo-768.jpg 768w",
+                f"{source_site}/images/photo-576.jpg 576w, {source_site}/images/photo-768.jpg 768w"
+            ),
+            (
+                "/images/photo.jpg 1x, /images/photo-2x.jpg 2x",
+                f"{source_site}/images/photo.jpg 1x, {source_site}/images/photo-2x.jpg 2x"
+            ),
+            (
+                "/images/photo.jpg",
+                f"{source_site}/images/photo.jpg"
+            ),
+            (
+                "https://other.com/photo.jpg 1x, /images/local.jpg 2x",
+                f"https://other.com/photo.jpg 1x, {source_site}/images/local.jpg 2x"
+            ),
+            (
+                "/images/photo-576.jpg 576w",
+                f"{source_site}/images/photo-576.jpg 576w"
+            ),
+        ]
+
+        for input_srcset, expected_output in test_cases:
+            with self.subTest(input_srcset=input_srcset):
+                result = self.plugin_instance.transform_srcset(input_srcset, source_site)
+                self.assertEqual(result, expected_output)
+
+    def test_transform_srcset_edge_cases(self):
+        """Test transform_srcset function with edge cases"""
+        source_site = "https://example.com"
+
+        # Empty or whitespace-only srcset
+        self.assertIsNone(self.plugin_instance.transform_srcset("", source_site))
+        self.assertIsNone(self.plugin_instance.transform_srcset("   ", source_site))
+        self.assertIsNone(self.plugin_instance.transform_srcset(" , , ", source_site))
+
+        # None input
+        self.assertIsNone(self.plugin_instance.transform_srcset(None, source_site))
+
+        # All absolute URLs (should remain unchanged)
+        result = self.plugin_instance.transform_srcset(
+            "https://other.com/photo.jpg 1x, https://other.com/photo-2x.jpg 2x",
+            source_site
+        )
+        self.assertEqual(result, "https://other.com/photo.jpg 1x, https://other.com/photo-2x.jpg 2x")
