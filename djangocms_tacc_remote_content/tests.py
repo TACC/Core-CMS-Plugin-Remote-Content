@@ -180,7 +180,8 @@ class RemoteContentPluginTests(TestCase):
             self.assertEqual(img_with_srcset['srcset'], expected_srcset)
 
             # Image with absolute srcset should transform src but leave srcset unchanged
-            img_absolute_srcset = [img for img in imgs_with_srcset if 'https://' in img['srcset']][0]
+            img_absolute_srcset = soup.find('img', src=defaults.NETLOC + '/images/photo3.jpg')
+            self.assertIsNotNone(img_absolute_srcset, "Image with absolute srcset not found")
             self.assertEqual(img_absolute_srcset['src'], defaults.NETLOC + '/images/photo3.jpg')
             self.assertEqual(img_absolute_srcset['srcset'], 'https://example.com/absolute.jpg 1x')
 
