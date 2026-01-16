@@ -1,7 +1,7 @@
 import logging
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, urlsplit, urlunparse, ParseResult
+from urllib.parse import urlsplit, urlunparse, urljoin, ParseResult
 
 from django.conf import settings
 from cms.plugin_base import CMSPluginBase
@@ -94,14 +94,41 @@ class RemoteContentPlugin(CMSPluginBase):
                     return True
         return False
 
-    def transform_srcset(self, srcset, source_site):
+    def is_relative_path(self, url):
+        """
+        Determine if a URL is a relative path that should be transformed.
+
+        Returns True for URLs that are relative paths (e.g., /path, ./path, ../path).
+        Returns False for absolute URLs, protocol-relative URLs, and anchors.
+
+        Args:
+            url: The URL string to check
+
+        Returns:
+            True if the URL is a relative path that should be transformed, False otherwise
+        """
+        if not url:
+            return False
+        if url.startswith('//'):
+            return False
+        if '://' in url:
+            return False
+        if url.startswith('#'):
+            return False
+        if url.startswith('/'):
+            return True
+        if url.startswith('./') or url.startswith('../'):
+            return True
+        return True
+
+    def transform_srcset(self, srcset, source_url):
         """
         Transform relative URLs in a srcset attribute to absolute URLs.
 
         Args:
             srcset: A srcset string that may contain multiple URLs separated by commas,
                     e.g., " /images/photo-576.jpg 576w, /images/photo-768.jpg 768w "
-            source_site: The base URL to prepend to relative URLs (e.g., "https://example.com")
+            source_url: The base URL to resolve relative URLs against (e.g., "https://example.com/page/")
 
         Returns:
             A transformed srcset string with relative URLs converted to absolute URLs,
@@ -126,9 +153,8 @@ class RemoteContentPlugin(CMSPluginBase):
                 url = part
                 descriptor = ''
 
-            # Transform relative URLs
-            if url.startswith('/'):
-                url = source_site + url
+            if self.is_relative_path(url):
+                url = urljoin(source_url, url)
 
             parts.append(url + descriptor)
 
@@ -136,7 +162,7 @@ class RemoteContentPlugin(CMSPluginBase):
             return ', '.join(parts)
         return None
 
-    def build_client_markup(self, source_markup, source_site):
+    def build_client_markup(self, source_markup, source_url):
         """Transform remote content for local display"""
         if not source_markup:
             return None
@@ -145,29 +171,26 @@ class RemoteContentPlugin(CMSPluginBase):
 
         use_relative = getattr(settings, 'PORTAL_PLUGIN_CONTENT_USE_RELATIVE_PATHS', defaults.USE_RELATIVE_PATHS)
 
-        # To transform resource URLs
         for tag in soup.find_all(src=True):
-            if tag['src'].startswith('/'):
+            src = tag['src']
+            if self.is_relative_path(src):
                 if not self.should_keep_relative(tag, use_relative):
                     tag['crossorigin'] = 'anonymous'
-                    tag['src'] = source_site + tag['src']
+                    tag['src'] = urljoin(source_url, src)
 
         for tag in soup.find_all(srcset=True):
             if not self.should_keep_relative(tag, use_relative):
-                transformed_srcset = self.transform_srcset(tag['srcset'], source_site)
+                transformed_srcset = self.transform_srcset(tag['srcset'], source_url)
                 if transformed_srcset:
                     tag['srcset'] = transformed_srcset
 
-        # To transform reference URLs
         for tag in soup.find_all(href=True):
             href = tag['href']
-            # To skip absolute URLs and anchors
-            if '://' in href or href.startswith('#'):
+            if not self.is_relative_path(href):
                 continue
-
             if not self.should_keep_relative(tag, use_relative):
                 tag['crossorigin'] = 'anonymous'
-                tag['href'] = source_site + href
+                tag['href'] = urljoin(source_url, href)
                 tag['target'] = '_blank'
 
         return str(soup)
@@ -183,9 +206,7 @@ class RemoteContentPlugin(CMSPluginBase):
             context['error_string'] = f'Unable to fetch content from {source_url}'
             return context
 
-        source = urlparse(source_root)
-        source_site = source.scheme + '://' + source.netloc
-        context['markup'] = self.build_client_markup(source_markup, source_site)
+        context['markup'] = self.build_client_markup(source_markup, source_url)
 
         if context['markup'] is None and settings.DEBUG:
             context['error_string'] = 'Error processing remote content'
