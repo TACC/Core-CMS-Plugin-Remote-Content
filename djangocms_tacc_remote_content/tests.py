@@ -13,7 +13,7 @@ from . import settings as defaults
 
 class RemoteContentPluginTests(TestCase):
     def setUp(self):
-        # Ensure we're using default settings
+        # To ensure we're using default settings
         if hasattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC'):
             delattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC')
 
@@ -22,7 +22,7 @@ class RemoteContentPluginTests(TestCase):
             self.placeholder,
             RemoteContentPlugin,
             "en",
-            remote_path="/about/staff"
+            remote_path="/about/about-tacc"
         )
         self.plugin_instance = self.plugin.get_plugin_class_instance()
         self.renderer = ContentRenderer(request=None)
@@ -42,7 +42,10 @@ class RemoteContentPluginTests(TestCase):
     def test_default_source_root(self):
         """Test plugin uses default netloc when setting is not provided"""
         with self.settings(PORTAL_PLUGIN_CONTENT_NETLOC=None):
-            delattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC')  # Force setting to be truly unset
+            # To force setting to be truly unset
+            # ???: Redundant? I see `setUp()` does this already
+            delattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC')
+
             source_root = self.plugin_instance.get_source_root()
             self.assertEqual(source_root, defaults.NETLOC)
 
@@ -78,10 +81,10 @@ class RemoteContentPluginTests(TestCase):
         with self.settings(PORTAL_PLUGIN_CONTENT_NETLOC=None):
             test_cases = [
                 # ( input path,     expected url )
-                ( "/about/staff",   f"{defaults.NETLOC}about/staff" ),
-                ( "/about/staff/",  f"{defaults.NETLOC}about/staff/" ),
-                ( "about/staff",    f"{defaults.NETLOC}about/staff" ),
-                ( "about/staff/",   f"{defaults.NETLOC}about/staff/" ),
+                ( "/about/about-tacc",   f"{defaults.NETLOC}about/about-tacc" ),
+                ( "/about/about-tacc/",  f"{defaults.NETLOC}about/about-tacc/" ),
+                ( "about/about-tacc",    f"{defaults.NETLOC}about/about-tacc" ),
+                ( "about/about-tacc/",   f"{defaults.NETLOC}about/about-tacc/" ),
             ]
 
         for input_path, expected_url in test_cases:
@@ -97,13 +100,12 @@ class RemoteContentPluginTests(TestCase):
     @override_settings(PORTAL_PLUGIN_CONTENT_NETLOC="https://example.com/path/")
     def test_url_building_with_complex_root(self):
         """Test URL building with different source root configurations"""
-        instance = RemoteContent(remote_path="/about/staff")
+        # Expect remote path has leading slash
+        instance = RemoteContent(remote_path="/about/about-tacc")
         full_url = self.plugin_instance.build_source_url(instance)
+        self.assertEqual(full_url, "https://example.com/path/about/about-tacc")
 
-        # Should handle source roots with paths and trailing slashes correctly
-        self.assertEqual(full_url, "https://example.com/path/about/staff")
-
-        # Test with a different instance to ensure path joining works
+        # Consider remote path without leading slash
         instance2 = RemoteContent(remote_path="no/leading/slash")
         full_url2 = self.plugin_instance.build_source_url(instance2)
         self.assertEqual(full_url2, "https://example.com/path/no/leading/slash")
@@ -120,8 +122,8 @@ class RemoteContentPluginTests(TestCase):
         html = self.renderer.render_plugin(self.plugin, context)
         self.assertIn("Test Content", html)
 
-    def test_keep_relative_paths(self):
-        """Test that elements matching CSS selectors from settings keep relative paths"""
+    def test_path_transformation(self):
+        """Test that relative and absolute paths are transformed correctly"""
         test_selectors = ['.pagination a', '[data-use-relative-url]']
         test_markup = '''
             <div>
@@ -134,6 +136,9 @@ class RemoteContentPluginTests(TestCase):
                     <a href="/docs/guide.html">Guide</a>
                     <img src="/path/to/image.jpg" data-use-relative-url>
                     <img src="/images/photo.jpg">
+                    <img src="/images/photo2.jpg" srcset=" /images/photo2-576.jpg 576w, /images/photo2-768.jpg 768w, /images/photo2-992.jpg 992w ">
+                    <img src="/images/photo3.jpg" srcset="https://example.com/absolute.jpg 1x">
+                    <img src="https://example.com/absolute-src.jpg" srcset="/images/relative-in-srcset.jpg 1x">
                 </div>
             </div>
         '''
@@ -168,6 +173,26 @@ class RemoteContentPluginTests(TestCase):
             other_img = soup.find('img', src=defaults.NETLOC + '/images/photo.jpg')
             self.assertEqual(other_img['src'], defaults.NETLOC + '/images/photo.jpg')
             self.assertEqual(other_img['crossorigin'], 'anonymous')
+            self.assertNotIn('srcset', other_img.attrs)
+
+            # Image with relative srcset should transform both src and srcset
+            imgs_with_srcset = [img for img in soup.find_all('img', srcset=True) if 'data-use-relative-url' not in img.attrs]
+            img_with_srcset = [img for img in imgs_with_srcset if img['srcset'].startswith(defaults.NETLOC)][0]
+            self.assertEqual(img_with_srcset['src'], defaults.NETLOC + '/images/photo2.jpg')
+            expected_srcset = f"{defaults.NETLOC}/images/photo2-576.jpg 576w, {defaults.NETLOC}/images/photo2-768.jpg 768w, {defaults.NETLOC}/images/photo2-992.jpg 992w"
+            self.assertEqual(img_with_srcset['srcset'], expected_srcset)
+
+            # Image with absolute srcset should transform src but leave srcset unchanged
+            img_absolute_srcset = soup.find('img', src=defaults.NETLOC + '/images/photo3.jpg')
+            self.assertIsNotNone(img_absolute_srcset, "Image with absolute srcset not found")
+            self.assertEqual(img_absolute_srcset['src'], defaults.NETLOC + '/images/photo3.jpg')
+            self.assertEqual(img_absolute_srcset['srcset'], 'https://example.com/absolute.jpg 1x')
+
+            # Image with absolute src but relative srcset should transform srcset independently
+            img_independent = soup.find('img', src='https://example.com/absolute-src.jpg')
+            self.assertIsNotNone(img_independent, "Image with absolute src and relative srcset not found")
+            self.assertEqual(img_independent['src'], 'https://example.com/absolute-src.jpg')
+            self.assertEqual(img_independent['srcset'], f"{defaults.NETLOC}/images/relative-in-srcset.jpg 1x")
 
     def test_query_parameter_handling(self):
         """Test handling of query parameters in URLs"""
@@ -195,3 +220,59 @@ class RemoteContentPluginTests(TestCase):
                 # Check CMS parameters are filtered out
                 for param in unexpected_params:
                     self.assertNotIn(param, url, f"Unexpected parameter '{param}' found in URL: {url}")
+
+    def test_transform_srcset(self):
+        """Test transform_srcset function with various srcset formats"""
+        source_site = "https://example.com"
+
+        test_cases = [
+            # (input srcset, expected output)
+            (
+                " /images/photo-576.jpg 576w, /images/photo-768.jpg 768w, /images/photo-992.jpg 992w ",
+                f"{source_site}/images/photo-576.jpg 576w, {source_site}/images/photo-768.jpg 768w, {source_site}/images/photo-992.jpg 992w"
+            ),
+            (
+                "/images/photo-576.jpg 576w, /images/photo-768.jpg 768w",
+                f"{source_site}/images/photo-576.jpg 576w, {source_site}/images/photo-768.jpg 768w"
+            ),
+            (
+                "/images/photo.jpg 1x, /images/photo-2x.jpg 2x",
+                f"{source_site}/images/photo.jpg 1x, {source_site}/images/photo-2x.jpg 2x"
+            ),
+            (
+                "/images/photo.jpg",
+                f"{source_site}/images/photo.jpg"
+            ),
+            (
+                "https://other.com/photo.jpg 1x, /images/local.jpg 2x",
+                f"https://other.com/photo.jpg 1x, {source_site}/images/local.jpg 2x"
+            ),
+            (
+                "/images/photo-576.jpg 576w",
+                f"{source_site}/images/photo-576.jpg 576w"
+            ),
+        ]
+
+        for input_srcset, expected_output in test_cases:
+            with self.subTest(input_srcset=input_srcset):
+                result = self.plugin_instance.transform_srcset(input_srcset, source_site)
+                self.assertEqual(result, expected_output)
+
+    def test_transform_srcset_edge_cases(self):
+        """Test transform_srcset function with edge cases"""
+        source_site = "https://example.com"
+
+        # Permit empty or whitespace-only srcset
+        self.assertIsNone(self.plugin_instance.transform_srcset("", source_site))
+        self.assertIsNone(self.plugin_instance.transform_srcset("   ", source_site))
+        self.assertIsNone(self.plugin_instance.transform_srcset(" , , ", source_site))
+
+        # Permit `None` input
+        self.assertIsNone(self.plugin_instance.transform_srcset(None, source_site))
+
+        # Do NOT change absolute URLs
+        result = self.plugin_instance.transform_srcset(
+            "https://other.com/photo.jpg 1x, https://other.com/photo-2x.jpg 2x",
+            source_site
+        )
+        self.assertEqual(result, "https://other.com/photo.jpg 1x, https://other.com/photo-2x.jpg 2x")

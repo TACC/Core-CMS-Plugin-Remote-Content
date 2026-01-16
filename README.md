@@ -45,7 +45,7 @@ This plugin fetches and displays content from remote TACC URLs. It was converted
 1. In the Django CMS admin interface:
    1. Edit a page.
    2. Add a "Remote Content" plugin to a placeholder.
-   3. Enter the path to the remote content (e.g. "/about/staff").
+   3. Enter the path to the remote content (e.g. "/about/about-tacc").
 
 2. The plugin will:
    1. Fetch content from the remote source.

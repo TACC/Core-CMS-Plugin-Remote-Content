@@ -94,6 +94,48 @@ class RemoteContentPlugin(CMSPluginBase):
                     return True
         return False
 
+    def transform_srcset(self, srcset, source_site):
+        """
+        Transform relative URLs in a srcset attribute to absolute URLs.
+
+        Args:
+            srcset: A srcset string that may contain multiple URLs separated by commas,
+                    e.g., " /images/photo-576.jpg 576w, /images/photo-768.jpg 768w "
+            source_site: The base URL to prepend to relative URLs (e.g., "https://example.com")
+
+        Returns:
+            A transformed srcset string with relative URLs converted to absolute URLs,
+            or None if srcset is empty or contains no valid parts.
+        """
+        if not srcset:
+            return None
+
+        # srcset can have multiple URLs: "url1 descriptor1, url2 descriptor2, ..."
+        # Transform each URL individually
+        parts = []
+        for part in srcset.split(','):
+            part = part.strip()
+            if not part:
+                continue
+            # Extract URL (everything before the first space or end of string)
+            space_idx = part.find(' ')
+            if space_idx > 0:
+                url = part[:space_idx]
+                descriptor = part[space_idx:]
+            else:
+                url = part
+                descriptor = ''
+
+            # Transform relative URLs
+            if url.startswith('/'):
+                url = source_site + url
+
+            parts.append(url + descriptor)
+
+        if parts:
+            return ', '.join(parts)
+        return None
+
     def build_client_markup(self, source_markup, source_site):
         """Transform remote content for local display"""
         if not source_markup:
@@ -109,6 +151,12 @@ class RemoteContentPlugin(CMSPluginBase):
                 if not self.should_keep_relative(tag, use_relative):
                     tag['crossorigin'] = 'anonymous'
                     tag['src'] = source_site + tag['src']
+
+        for tag in soup.find_all(srcset=True):
+            if not self.should_keep_relative(tag, use_relative):
+                transformed_srcset = self.transform_srcset(tag['srcset'], source_site)
+                if transformed_srcset:
+                    tag['srcset'] = transformed_srcset
 
         # To transform reference URLs
         for tag in soup.find_all(href=True):
