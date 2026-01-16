@@ -13,7 +13,7 @@ from . import settings as defaults
 
 class RemoteContentPluginTests(TestCase):
     def setUp(self):
-        # Ensure we're using default settings
+        # To ensure we're using default settings
         if hasattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC'):
             delattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC')
 
@@ -42,7 +42,10 @@ class RemoteContentPluginTests(TestCase):
     def test_default_source_root(self):
         """Test plugin uses default netloc when setting is not provided"""
         with self.settings(PORTAL_PLUGIN_CONTENT_NETLOC=None):
-            delattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC')  # Force setting to be truly unset
+            # To force setting to be truly unset
+            # ???: Redundant? I see `setUp()` does this already
+            delattr(settings, 'PORTAL_PLUGIN_CONTENT_NETLOC')
+
             source_root = self.plugin_instance.get_source_root()
             self.assertEqual(source_root, defaults.NETLOC)
 
@@ -97,13 +100,12 @@ class RemoteContentPluginTests(TestCase):
     @override_settings(PORTAL_PLUGIN_CONTENT_NETLOC="https://example.com/path/")
     def test_url_building_with_complex_root(self):
         """Test URL building with different source root configurations"""
+        # Expect remote path has leading slash
         instance = RemoteContent(remote_path="/about/about-tacc")
         full_url = self.plugin_instance.build_source_url(instance)
-
-        # Should handle source roots with paths and trailing slashes correctly
         self.assertEqual(full_url, "https://example.com/path/about/about-tacc")
 
-        # Test with a different instance to ensure path joining works
+        # Consider remote path without leading slash
         instance2 = RemoteContent(remote_path="no/leading/slash")
         full_url2 = self.plugin_instance.build_source_url(instance2)
         self.assertEqual(full_url2, "https://example.com/path/no/leading/slash")
@@ -260,15 +262,15 @@ class RemoteContentPluginTests(TestCase):
         """Test transform_srcset function with edge cases"""
         source_site = "https://example.com"
 
-        # Empty or whitespace-only srcset
+        # Permit empty or whitespace-only srcset
         self.assertIsNone(self.plugin_instance.transform_srcset("", source_site))
         self.assertIsNone(self.plugin_instance.transform_srcset("   ", source_site))
         self.assertIsNone(self.plugin_instance.transform_srcset(" , , ", source_site))
 
-        # None input
+        # Permit `None` input
         self.assertIsNone(self.plugin_instance.transform_srcset(None, source_site))
 
-        # All absolute URLs (should remain unchanged)
+        # Do NOT change absolute URLs
         result = self.plugin_instance.transform_srcset(
             "https://other.com/photo.jpg 1x, https://other.com/photo-2x.jpg 2x",
             source_site
