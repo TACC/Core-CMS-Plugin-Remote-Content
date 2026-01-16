@@ -136,6 +136,7 @@ class RemoteContentPluginTests(TestCase):
                     <img src="/images/photo.jpg">
                     <img src="/images/photo2.jpg" srcset=" /images/photo2-576.jpg 576w, /images/photo2-768.jpg 768w, /images/photo2-992.jpg 992w ">
                     <img src="/images/photo3.jpg" srcset="https://example.com/absolute.jpg 1x">
+                    <img src="https://example.com/absolute-src.jpg" srcset="/images/relative-in-srcset.jpg 1x">
                 </div>
             </div>
         '''
@@ -184,6 +185,12 @@ class RemoteContentPluginTests(TestCase):
             self.assertIsNotNone(img_absolute_srcset, "Image with absolute srcset not found")
             self.assertEqual(img_absolute_srcset['src'], defaults.NETLOC + '/images/photo3.jpg')
             self.assertEqual(img_absolute_srcset['srcset'], 'https://example.com/absolute.jpg 1x')
+
+            # Image with absolute src but relative srcset should transform srcset independently
+            img_independent = soup.find('img', src='https://example.com/absolute-src.jpg')
+            self.assertIsNotNone(img_independent, "Image with absolute src and relative srcset not found")
+            self.assertEqual(img_independent['src'], 'https://example.com/absolute-src.jpg')
+            self.assertEqual(img_independent['srcset'], f"{defaults.NETLOC}/images/relative-in-srcset.jpg 1x")
 
     def test_query_parameter_handling(self):
         """Test handling of query parameters in URLs"""

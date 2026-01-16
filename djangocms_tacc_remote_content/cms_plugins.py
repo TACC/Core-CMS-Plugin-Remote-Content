@@ -152,11 +152,11 @@ class RemoteContentPlugin(CMSPluginBase):
                     tag['crossorigin'] = 'anonymous'
                     tag['src'] = source_site + tag['src']
 
-                    srcset = tag.get('srcset')
-                    if srcset:
-                        transformed_srcset = self.transform_srcset(srcset, source_site)
-                        if transformed_srcset:
-                            tag['srcset'] = transformed_srcset
+        for tag in soup.find_all(srcset=True):
+            if not self.should_keep_relative(tag, use_relative):
+                transformed_srcset = self.transform_srcset(tag['srcset'], source_site)
+                if transformed_srcset:
+                    tag['srcset'] = transformed_srcset
 
         # To transform reference URLs
         for tag in soup.find_all(href=True):
