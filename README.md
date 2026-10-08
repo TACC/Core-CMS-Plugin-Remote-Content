@@ -12,8 +12,6 @@ This plugin fetches and displays content from remote TACC URLs. It was converted
 
 1. Follow [(wiki) Usage Quick Start](https://github.com/TACC/Django-App/wiki/Usage-Quick-Start).
 
-[Core-CMS](https://github.com/TACC/Core-CMS) installs this package from Git (Poetry dependency on a release tag), not PyPI. After install, add `djangocms_tacc_remote_content` to `INSTALLED_APPS`, run migrations, and set optional [plugin settings](./docs/settings.md#portal_plugin_content_netloc) (e.g. `PORTAL_PLUGIN_CONTENT_NETLOC`).
-
 ## Usage
 
 1. In the Django CMS admin interface:
